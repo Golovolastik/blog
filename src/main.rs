@@ -1,3 +1,5 @@
+use course_project::socket;
+
 fn main() {
-    println!("Hello, world!");
+    socket::listen();
 }
