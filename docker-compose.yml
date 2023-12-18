@@ -5,9 +5,9 @@ services:
 
   db:
     image: postgres
-    ports:
-      - 5432:8080
     restart: always
+    ports:
+      - 5432:5432
     environment:
       POSTGRES_PASSWORD: example
 
