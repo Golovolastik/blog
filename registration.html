@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        form {
+            border: 3px solid #f1f1f1;
+            width: 300px; /* Фиксированная ширина формы */
+        }
+
+        input[type=text], input[type=password], input[type=email], button {
+            width: 100%; /* Используем 100% ширины */
+            padding: 12px 20px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+            box-sizing: border-box; /* Для учета padding и border в общей ширине */
+        }
+
+        button {
+            background-color: #04AA6D;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            opacity: 0.8;
+        }
+
+        .imgcontainer {
+            text-align: center;
+            margin: 24px 0 12px 0;
+        }
+
+        img.avatar {
+            width: 40%;
+            border-radius: 50%;
+        }
+
+        .container {
+            padding: 16px;
+        }
+
+        span.psw {
+            float: right;
+            padding-top: 16px;
+        }
+
+    </style>
+</head>
+<body>
+
+<form id="loginForm">
+    <div class="imgcontainer">
+        <img src="/images/logo.jpg" alt="Avatar" class="avatar">
+    </div>
+
+    <div class="container">
+        <label for="uname"><b>Username</b></label>
+        <input type="text" id="username" placeholder="Enter Username" name="uname" required>
+
+        <label for="psw"><b>Password</b></label>
+        <input type="password" id="password" placeholder="Enter Password" name="psw" required>
+
+        <label for="email"><b>Email</b></label>
+        <input type="email" id="email" placeholder="Enter Email" name="email" required>
+
+        <button type="submit" onclick="submitForm()">Register</button>
+        <script>
+            function submitForm() {
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                const email = document.getElementById('email').value;
+
+
+                const data = {
+                    username: username,
+                    password: password,
+                    email: email
+                };
+
+                fetch('http://localhost:7878', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                })
+                    .then(response => {
+                        // Обработка ответа от сервера
+                        if (response.ok) {
+                            window.location.href = 'http://localhost:7878'; // Перенаправление на страницу hello.html
+                        } else {
+                            throw new Error('Ошибка отправки данных на сервер');
+                        }
+                        /*if (response.ok) {
+                            return response.text(); // Или response.json(), в зависимости от ожидаемого формата ответа
+                        }
+                        throw new Error('Ошибка отправки данных на сервер');*/
+                    })
+                    .then(data => {
+                        // Обработка ответа от сервера после успешной отправки
+                        console.log(data);
+                        // Здесь можно добавить логику для обработки ответа
+                    })
+                    .catch(error => {
+                        // Обработка ошибок при отправке данных на сервер
+                        console.error(error);
+                    });
+            }
+        </script>
+    </div>
+</form>
+
+</body>
+</html>
