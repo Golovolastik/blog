@@ -72,7 +72,7 @@
         <input type="password" id="password" placeholder="Enter Password" name="psw" required>
 
         <button type="submit" onclick="submitForm()">Login</button>
-        <button type="register">Register</button>
+        <button type="register" onclick="register()">Register</button>
         <script>
             function submitForm() {
                 const username = document.getElementById('username').value;
@@ -111,6 +111,10 @@
                         // Обработка ошибок при отправке данных на сервер
                         console.error(error);
                     });
+            }
+
+            function register() {
+                window.location.href = 'http://localhost:7878/register';
             }
         </script>
     </div>

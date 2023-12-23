@@ -17,6 +17,7 @@ fn handle_connection(mut stream: TcpStream) {
 
     let get = b"GET / HTTP/1.1\r\n";
     let sleep = b"GET /sleep HTTP/1.1\r\n";
+    let registration = b"GET /register HTTP/1.1\r\n";
     let post = b"POST / HTTP/1.1\r\n";
     let options = b"OPTIONS / HTTP/1.1\r\n";
     let image_path = b"GET /images/";
@@ -31,6 +32,15 @@ fn handle_connection(mut stream: TcpStream) {
         stream.flush().unwrap();
     } else if buffer.starts_with(get) {
         let contents = fs::read_to_string("login.html").unwrap();
+        let response = format!(
+            "HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n{}",
+            contents.len(),
+            contents
+        );
+        stream.write_all(response.as_bytes()).unwrap();
+        stream.flush().unwrap();
+    } else if buffer.starts_with(registration) {
+        let contents = fs::read_to_string("registration.html").unwrap();
         let response = format!(
             "HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n{}",
             contents.len(),
