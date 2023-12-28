@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            border: 3px solid #f1f1f1;
+            width: 80%; /* Изменяем ширину контейнера */
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #fff;
+        }
+
+        .post {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .post:last-child {
+            border-bottom: none; /* Убираем границу у последнего поста */
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .post h2 {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .post p {
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .imgcontainer {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        img.avatar {
+            width: 20%;
+            border-radius: 50%;
+        }
+        .new-post-btn {
+            display: block;
+            width: 100%;
+            text-align: center;
+            padding: 10px 0;
+            margin-bottom: 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 18px;
+        }
+
+        .new-post-btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="imgcontainer">
+        <img src="/images/logo.jpg" alt="Avatar" class="avatar">
+    </div>
+
+    <a href="#" class="new-post-btn">Новый пост +</a>
+
+    <div class="post">
+        <h2>Заголовок поста 1</h2>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam.</p>
+    </div>
+
+    <div class="post">
+        <h2>Заголовок поста 2</h2>
+        <p>Quisque ullamcorper placerat ipsum. Cras nibh. Morbi vel justo vitae lacus tincidunt ultrices.</p>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        a {
+            color: #0060B6;
+            text-decoration: none;
+        }
+
+        a:hover {
+            color:#00A0C6;
+            text-decoration:none;
+            cursor:pointer;
+        }
+
+        .container {
+            border: 3px solid #f1f1f1;
+            width: 80%;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #fff;
+        }
+
+        .post {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .post:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .post h2 {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .post p {
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .imgcontainer {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        img.avatar {
+            width: 20%;
+            border-radius: 50%;
+        }
+
+        /* Стили для кнопки "Новый пост" */
+        .new-post-btn {
+            display: block;
+            width: 100%;
+            text-align: center;
+            padding: 10px;
+            margin-bottom: 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 18px;
+            transition: background-color 0.3s ease;
+        }
+
+        .new-post-btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="imgcontainer">
+        <img src="/images/logo.jpg" alt="Avatar" class="avatar">
+    </div>
+
+    <!-- Кнопка "Новый пост" -->
+    <a href="https://www.ya.ru">
+        <button class="new-post-btn">Новый пост +</button>
+    </a>
+
+    {{#each posts}}
+    <div class="post">
+        <h2>{{this.0}}</h2>
+        <p>{{this.1}}</p>
+    </div>
+    {{/each}}
+</div>
+
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f7f7f7;
+        }
+
+        .container {
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 60%;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #fff;
+        }
+
+        .post-form {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .post-form h2 {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .post-form textarea,
+        .post-form input[type="text"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: vertical;
+        }
+
+        .post-form button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background-color 0.3s ease;
+        }
+
+        .post-form button:hover {
+            background-color: #0056b3;
+        }
+
+        .imgcontainer {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        img.avatar {
+            width: 20%;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="imgcontainer">
+        <img src="/images/logo.jpg" alt="Avatar" class="avatar">
+    </div>
+
+    <div class="post-form">
+        <h2>Добавить запись</h2>
+        <form>
+            <input type="text" id="postTitle" name="postTitle" placeholder="Заголовок поста">
+            <textarea id="postContent" name="postContent" placeholder="Текст поста" rows="6"></textarea>
+            <button type="submit">Опубликовать</button>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

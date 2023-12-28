@@ -40,7 +40,8 @@ fn handle_connection(mut stream: TcpStream) {
         stream.write_all(response.as_bytes()).unwrap();
         stream.flush().unwrap();
     } else if buffer.starts_with(registration) {
-        let contents = fs::read_to_string("registration.html").unwrap();
+        let contents = crate::content::generate();
+        //let contents = fs::read_to_string("registration.html").unwrap();
         let response = format!(
             "HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n{}",
             contents.len(),
