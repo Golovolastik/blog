@@ -14,6 +14,7 @@ pub trait UserRepository {
     fn add_user(&mut self, name: &str, password_hash: &str) -> Result<(), Error::MyError>;
     // Другие методы для работы с пользователями могут быть добавлены здесь
     fn get_user(&mut self, name: &str, password: &str) -> Result<User, Error::MyError>;
+    fn get_user_posts(&mut self, user: crate::user::User) -> Result<Vec<crate::post::Post>, Error::MyError>;
 }
 
 pub fn calculate_password_hash(pass: &str) -> String {

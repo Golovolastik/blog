@@ -1,12 +1,7 @@
+#[derive(Debug)]
 pub struct Post {
-    post_id: Option<u32>,
-    author: Option<String>,
-    author_id: Option<u16>,
-    header: Option<String>,
-    content: Option<String>,
+    pub post_id: i16,
+    pub author_id: i16,
+    pub header: String,
+    pub content: String,
 }
- impl Post {
-     pub fn new(author: Option<String>) {
-
-     }
- }

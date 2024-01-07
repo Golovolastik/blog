@@ -2,7 +2,8 @@ use std::io::Read;
 use postgres;
 use postgres::{Client, NoTls};
 use crate::Error;
-use crate::user::UserRepository;
+use crate::Error::MyError;
+use crate::user::{User, UserRepository};
 
 
 pub struct PostgresUserRepository {
@@ -82,6 +83,26 @@ impl crate::user::UserRepository for PostgresUserRepository {
             user_data.unwrap()
         };
         Ok(user)
+    }
+
+    fn get_user_posts(&mut self, user: User) -> Result<Vec<crate::post::Post>, MyError> {
+        let result = self.client.query(
+            "SELECT * FROM post JOIN blog_user USING(user_id) WHERE user_id = $1",
+            &[&user.id]
+        );
+        if let Err(err) = result {
+            return Err(Error::MyError::UserNotExists)}
+        let mut posts: Vec<crate::post::Post> = Vec::new();
+        for row in result.unwrap() {
+            let mut record = crate::post::Post {
+                author_id: row.get(0),
+                post_id: row.get(1),
+                header: row.get(2),
+                content: row.get(3),
+            };
+            &posts.push(record);
+        }
+        Ok(posts)
     }
 }
 
@@ -172,4 +193,9 @@ pub fn test_func() {
     }
     //db.add_user("ololo", "safqfcvqe").unwrap();
     //println!("{:?}", db.get_user("Golovolastik", "mob5651008"));
+    let admin = db.get_user("Golovolastik", "mob5651008");
+    //println!("{:?}", db.get_user_posts(admin.unwrap()));
+    for post in db.get_user_posts(admin.unwrap()) {
+        println!("{:?}", post);
+    }
 }
