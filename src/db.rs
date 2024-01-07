@@ -62,7 +62,6 @@ impl crate::user::UserRepository for PostgresUserRepository {
         );
         match result {
             Ok(ref row) => {
-                println!("{:?}", row.len());
                 if row.len() > 1 {
                     return Err(Error::MyError::UserAlreadyExists)
                 }
@@ -172,5 +171,5 @@ pub fn test_func() {
         db = connection.unwrap();
     }
     //db.add_user("ololo", "safqfcvqe").unwrap();
-    println!("{:?}", db.get_user("Golovolastik", "mob5651008"));
+    //println!("{:?}", db.get_user("Golovolastik", "mob5651008"));
 }
