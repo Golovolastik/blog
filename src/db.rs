@@ -96,13 +96,25 @@ impl crate::user::UserRepository for PostgresUserRepository {
         for row in result.unwrap() {
             let mut record = crate::post::Post {
                 author_id: row.get(0),
-                post_id: row.get(1),
+                //post_id: row.get(1),
                 header: row.get(2),
                 content: row.get(3),
             };
             &posts.push(record);
         }
         Ok(posts)
+    }
+
+    fn add_post(&mut self, user: User, post: crate::post::Post) -> Result<(), MyError> {
+        match self.client.execute(
+            "INSERT INTO post (user_id, title, content) VALUES ($1, $2, $3)",
+            &[&user.id, &post.header, &post.content],
+        ) {
+            Ok(1) => println!("Post added"),
+            Ok(num) => println!("Undefined behavior"),
+            _ => return Err(MyError::UserNotExists)
+        }
+        Ok(())
     }
 }
 
@@ -111,32 +123,6 @@ pub fn connect() -> Result<PostgresUserRepository, postgres::Error> {
     let mut client = Client::connect("postgresql://postgres:example@localhost:5432/blog", NoTls)?;
     let mut admin = PostgresUserRepository::new(client);
     Ok(admin)
-
-
-    // // Попытка выполнить простой запрос, например, SHOW VERSION
-    // let version_query = client.query("SHOW SERVER_VERSION", &[])?;
-    //
-    // if let Some(row) = version_query.get(0) {
-    //     let version: String = row.get(0);
-    //     println!("Успешное подключение! Версия сервера: {}", version);
-    // } else {
-    //     println!("Не удалось получить версию сервера.");
-    // }
-
-//     client.batch_execute("
-//     CREATE TABLE person (
-//         id      SERIAL PRIMARY KEY,
-//         name    TEXT NOT NULL,
-//         data    BYTEA
-//     )
-// ")?;
-//
-//     let name = "Ferris";
-//     let data = None::<&[u8]>;
-//     client.execute(
-//         "INSERT INTO person (name, data) VALUES ($1, $2)",
-//         &[&name, &data],
-//     )?;
 
 //     !!!!!!!!!!!!!!!
 //         !!!!!!!!!!!
@@ -151,37 +137,6 @@ pub fn connect() -> Result<PostgresUserRepository, postgres::Error> {
 //     Ok(())
 }
 
-// pub fn add_user_to_db(name: &str, pass_hash: &str) -> Result<(), Error> {
-//     check_user_availability(&name);
-//     //add_to_db(&name, &pass_hash);
-//     Ok(())
-// }
-// pub fn check_user_availability(name: &str) -> Result<bool, Error> {
-//     let mut client = Client::connect("postgresql://postgres:example@localhost:5432/blog", NoTls)?;
-//
-//     for row in client.query("SELECT * FROM blog_user WHERE nick_name = $1", &[&name])? {
-//         if let data = row.get::<usize, &str>(1) {
-//             return Ok(false)
-//         }
-//
-//         //println!("found nickname: {:?}", data);
-//     }
-//     Ok(true)
-//     //"SELECT COUNT(*) FROM blog_user WHERE nick_name = $1"
-// }
-
-// fn insert_hash(user_id: i32, password: &str) -> Result<(), Error> {
-//     let data = password.as_bytes();
-//     let hash = crypto_hash::hex_digest(crypto_hash::Algorithm::SHA256, data);
-//
-//     let mut client = Client::connect("postgresql://postgres:example@localhost:5432/blog", NoTls)?;
-//
-//     let stmt = client.prepare("INSERT INTO auth (user_id, pass_hash) VALUES ($1, $2)")?;
-//     client.execute(&stmt, &[&user_id, &hash])?;
-//
-//     Ok(())
-// }
-
 pub fn test_func() {
     //println!("{:?}",insert_hash(1, "mob5651008"));
     let mut connection = connect();
@@ -195,7 +150,17 @@ pub fn test_func() {
     //println!("{:?}", db.get_user("Golovolastik", "mob5651008"));
     let admin = db.get_user("Golovolastik", "mob5651008");
     //println!("{:?}", db.get_user_posts(admin.unwrap()));
-    for post in db.get_user_posts(admin.unwrap()) {
-        println!("{:?}", post);
-    }
+    // for post in db.get_user_posts(admin.unwrap()) {
+    //     println!("{:?}", post);
+    // }
+    let post = crate::post::Post {
+        //post_id: 0,
+        author_id: admin.as_ref().unwrap().id,
+        header: "Tilimilitryamdia".to_string(),
+        content: "Story about fairy country...".to_string(),
+    };
+    match db.add_post(admin.unwrap(), post) {
+        Ok(()) => println!("Success"),
+        Err(err) => println!("Something wrong: {:?}", err),
+    };
 }
