@@ -34,6 +34,30 @@ impl crate::user::UserRepository for PostgresUserRepository {
         }
     }
 
+    fn check_pass(&mut self, name: &str, pass: &str) -> bool {
+        let hash = crate::user::calculate_password_hash(pass);
+        let db_hash = self.client.query(
+            "SELECT pass_hash FROM blog_user WHERE nick_name = $1",
+            &[&name],
+        );
+        match db_hash {
+            Err(err) => println!("Something went wrong!"),
+            Ok(result) => {
+                for row in result {
+                    match row.get::<usize, String>(0) {
+                        query => {
+                            if query == hash {
+                                return true;
+                            }
+                        }
+                        _ => println!("Something went wrong!")
+                    }
+                }
+            }
+        }
+        false
+    }
+
     fn add_user(&mut self, name: &str, password: &str) -> Result<(), Error::MyError> {
         if let Ok(false) = crate::user::UserRepository::check_user_availability(self, name) {
             return Err(Error::MyError::UserAlreadyExists);
@@ -153,14 +177,15 @@ pub fn test_func() {
     // for post in db.get_user_posts(admin.unwrap()) {
     //     println!("{:?}", post);
     // }
-    let post = crate::post::Post {
-        //post_id: 0,
-        author_id: admin.as_ref().unwrap().id,
-        header: "Tilimilitryamdia".to_string(),
-        content: "Story about fairy country...".to_string(),
-    };
-    match db.add_post(admin.unwrap(), post) {
-        Ok(()) => println!("Success"),
-        Err(err) => println!("Something wrong: {:?}", err),
-    };
+    // let post = crate::post::Post {
+    //     //post_id: 0,
+    //     author_id: admin.as_ref().unwrap().id,
+    //     header: "Tilimilitryamdia".to_string(),
+    //     content: "Story about fairy country...".to_string(),
+    // };
+    // match db.add_post(admin.unwrap(), post) {
+    //     Ok(()) => println!("Success"),
+    //     Err(err) => println!("Something wrong: {:?}", err),
+    // };
+    println!("{:?}", db.check_pass("Golovolastik", "mob5008"));
 }

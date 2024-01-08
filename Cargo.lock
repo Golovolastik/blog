@@ -134,6 +134,7 @@ dependencies = [
  "crypto-hash",
  "handlebars",
  "postgres",
+ "serde",
  "serde_json",
 ]
 

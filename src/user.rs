@@ -1,5 +1,6 @@
 use postgres;
 use crate::Error;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug)]
 pub struct User {
@@ -7,10 +8,16 @@ pub struct User {
     pub login: String,
     pub password_hash: String,
 }
+#[derive(Serialize, Deserialize, Debug)]
+pub struct UserLogin {
+    pub username: String,
+    pub password: String,
+}
 
 // Интерфейс для работы с пользователями в базе данных
 pub trait UserRepository {
     fn check_user_availability(&mut self, name: &str) -> Result<bool, Error::MyError>;
+    fn check_pass(&mut self, name: &str, pass: &str) -> bool;
     fn add_user(&mut self, name: &str, password_hash: &str) -> Result<(), Error::MyError>;
     // Другие методы для работы с пользователями могут быть добавлены здесь
     fn get_user(&mut self, name: &str, password: &str) -> Result<User, Error::MyError>;
