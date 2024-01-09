@@ -101,7 +101,7 @@
                         } else if (response.status === 401){
                             return response.text(); // Возвращаем текст ответа
                         } else {
-                            throw new Error('Ошибка отправки данных на сервер');
+                            throw new Error('Error sending data');
                         }
                     })
                     .then(text => {
@@ -114,9 +114,14 @@
                             const errorMessage = document.getElementById('error-message');
                             errorMessage.innerText = "User doesn't register";
                             errorMessage.style.display = 'block';
+                        } else if (text.includes('session_id=')) {
+                            // Парсим полученный Cookie, чтобы получить идентификатор сессии
+                            const sessionID = text.split('session_id=')[1].split(';')[0];
+                            // Запрашиваем страницу /session= с идентификатором сессии
+                            window.location.href = `http://localhost:7878/session=${sessionID}`;
                         } else {
                             // Если ошибки нет, обновляем содержимое страницы
-                            window.location.href = `http://localhost:7878/uname=${username}`;
+                            window.location.href = `http://localhost:7878/helloworld`;
                         }
                     })
                     .catch(error => {

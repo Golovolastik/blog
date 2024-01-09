@@ -1,12 +1,14 @@
 use handlebars::Handlebars;
 use std::collections::BTreeMap;
 use std::fs;
+use crate::db::PostgresUserRepository;
+use crate::user::UserRepository;
 
-pub fn generate() -> String {
+pub fn generate(db: &mut PostgresUserRepository, user: Option<String>) -> String {
     // Создаем экземпляр Handlebars
     let mut handlebars = Handlebars::new();
-
-    // Пример данных для постов блога (заголовок и текст)
+    //db.get_user_posts()
+    // заголовок и текст
     let mut data = BTreeMap::new();
     data.insert("posts", vec![
         ("Post 1", "Lorem ipsum dolor sit amet, consectetur adipiscing elit."),
