@@ -74,12 +74,12 @@ fn handle_connection(mut stream: TcpStream) {
             Ok(ref usr) => println!("{:?}", usr),
         }
 
-        println!("Получены данные из формы: {:?}", user);
-        match db.check_user_availability(&user.unwrap().username) {
+        println!("Получены данные из формы: {:?}", &user);
+        match db.check_user_availability(&user.as_ref().unwrap().username) {
             Ok(true) => println!("User doesn't register"),
             Ok(false) => {
                 println!("User registered");
-                match db.check_pass(&user.unwrap().username, &user.unwrap().password) {
+                match db.check_pass(&user.as_ref().unwrap().username, &user.as_ref().unwrap().password) {
                     true => {
                         println!("Password is correct");
                     },

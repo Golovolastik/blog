@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Hello!</title>
+</head>
+<body>
+<h1>Hello!</h1>
+<p>Hi from Rust</p>
+<form id="loginForm">
+    <input type="text" id="username" name="username" placeholder="Логин">
+    <input type="password" id="password" name="password" placeholder="Пароль">
+    <button type="button" onclick="submitForm()">Отправить</button>
+
+    <script>
+        function submitForm() {
+            // const username = document.getElementById('username').value;
+            // const password = document.getElementById('password').value;
+            //
+            // const data = {
+            //     username: username,
+            //     password: password
+            // };
+            //
+            // fetch('http://localhost:7878', {
+            //     method: 'POST',
+            //     headers: {
+            //         'Content-Type': 'application/json'
+            //     },
+            //     body: JSON.stringify(data)
+            // })
+            //     .then(response => {
+            //         // Обработка ответа от сервера
+            //         if (response.ok) {
+            //             return response.text(); // Или response.json(), в зависимости от ожидаемого формата ответа
+            //         }
+            //         throw new Error('Ошибка отправки данных на сервер');
+            //     })
+            //     .then(data => {
+            //         // Обработка ответа от сервера после успешной отправки
+            //         console.log(data);
+            //         // Здесь можно добавить логику для обработки ответа
+            //     })
+            //     .catch(error => {
+            //         // Обработка ошибок при отправке данных на сервер
+            //         console.error(error);
+            //     });
+        }
+    </script>
+
+
+</form>
+
+</body>
+</html>

@@ -59,6 +59,8 @@
 </head>
 <body>
 
+<div id="error-message" style="color: red; font-size: 0.8em; display: none; padding: 5px; background-color: #ffe0e0; position: absolute; top: 0; left: 50%; transform: translateX(-50%); z-index: 1;"></div>
+
 <form id="loginForm">
     <div class="imgcontainer">
         <img src="/images/logo.jpg" alt="Avatar" class="avatar">
@@ -68,13 +70,16 @@
         <label for="uname"><b>Username</b></label>
         <input type="text" id="username" placeholder="Enter Username" name="uname" required>
 
-        <label for="psw"><b>Password</b></label>
-        <input type="password" id="password" placeholder="Enter Password" name="psw" required>
+<!--        <label for="psw"><b>Password</b></label>-->
+        <label><b>Password</b></label>
+        <input type="password" id="password" placeholder="Enter Password">
 
-        <button type="submit" onclick="submitForm()">Login</button>
-        <button type="register" onclick="register()">Register</button>
+        <button type="submit" onclick="submitForm(event)">Login</button>
+        <button type="register" onclick="register(event)">Register</button>
         <script>
-            function submitForm() {
+
+            function submitForm(event) {
+                event.preventDefault();
                 const username = document.getElementById('username').value;
                 const password = document.getElementById('password').value;
 
@@ -91,29 +96,39 @@
                     body: JSON.stringify(data)
                 })
                     .then(response => {
-                        // Обработка ответа от сервера
                         if (response.ok) {
-                            window.location.href = 'http://localhost:7878'; // Перенаправление на страницу hello.html
+                            return response.text();
+                        } else if (response.status === 401){
+                            return response.text(); // Возвращаем текст ответа
                         } else {
                             throw new Error('Ошибка отправки данных на сервер');
                         }
-                        /*if (response.ok) {
-                            return response.text(); // Или response.json(), в зависимости от ожидаемого формата ответа
-                        }
-                        throw new Error('Ошибка отправки данных на сервер');*/
                     })
-                    .then(data => {
-                        // Обработка ответа от сервера после успешной отправки
-                        console.log(data);
-                        // Здесь можно добавить логику для обработки ответа
+                    .then(text => {
+                        // Показываем сообщение об ошибке, если таковое имеется в ответе
+                        if (text.includes('incorrect password')) {
+                            const errorMessage = document.getElementById('error-message');
+                            errorMessage.innerText = 'Wrong password';
+                            errorMessage.style.display = 'block';
+                        } else if (text.includes("User doesn't register")) {
+                            const errorMessage = document.getElementById('error-message');
+                            errorMessage.innerText = "User doesn't register";
+                            errorMessage.style.display = 'block';
+                        } else {
+                            // Если ошибки нет, обновляем содержимое страницы
+                            window.location.href = `http://localhost:7878/uname=${username}`;
+                        }
                     })
                     .catch(error => {
                         // Обработка ошибок при отправке данных на сервер
                         console.error(error);
                     });
             }
-
-            function register() {
+            function trying() {
+                window.location.href = `http://localhost:7878/post`;
+            }
+            function register(event) {
+                event.preventDefault();
                 window.location.href = 'http://localhost:7878/register';
             }
         </script>
