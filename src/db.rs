@@ -109,7 +109,7 @@ impl crate::user::UserRepository for PostgresUserRepository {
         Ok(user)
     }
 
-    fn get_user_posts(&mut self, user: String) -> Result<Vec<crate::post::Post>, MyError> {
+    fn get_user_posts(&mut self, user: &str) -> Result<Vec<crate::post::Post>, MyError> {
         let result = self.client.query(
             "SELECT * FROM post JOIN blog_user USING(user_id) WHERE nick_name = $1",
             &[&user]

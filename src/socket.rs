@@ -188,8 +188,8 @@ fn handle_session(stream: &mut TcpStream, session_id: String, db: &mut PostgresU
     //let binding = session_manager.unwrap();
     let user = find_user(session_id, &session_manager);
     println!("{:?}", user);
-    let contents = fs::read_to_string("registration.html").unwrap();
-    //let contents = generate(db, user);
+    //let contents = fs::read_to_string("registration.html").unwrap();
+    let contents = crate::content::generate(db, user);
     let response = format!(
         "HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n{}",
         contents.len(),

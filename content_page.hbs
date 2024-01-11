@@ -93,14 +93,14 @@
 
     <!-- Кнопка "Новый пост" -->
     <a href="https://www.ya.ru">
-        <button class="new-post-btn">Новый пост +</button>
+        <button class="new-post-btn">Add post +</button>
     </a>
 
     {{#each posts}}
-    <div class="post">
-        <h2>{{this.1}}</h2>
-        <p>{{this.2}}</p>
-    </div>
+        <div class="post">
+            <h2>{{this.0}}</h2>
+            <p>{{this.1}}</p>
+        </div>
     {{/each}}
 </div>
 
