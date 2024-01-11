@@ -76,14 +76,14 @@ impl crate::user::UserRepository for PostgresUserRepository {
         Ok(())
     }
     // Добавьте реализацию других методов работы с пользователями по необходимости
-    fn get_user(&mut self, name: &str, password: &str) -> Result<crate::user::User, Error::MyError> {
+    fn get_user(&mut self, name: &str) -> Result<crate::user::User, Error::MyError> {
         if let Ok(true) = crate::user::UserRepository::check_user_availability(self, name) {
             return Err(Error::MyError::UserNotExists);
         }
-        let hash = crate::user::calculate_password_hash(password);
+        //let hash = crate::user::calculate_password_hash(password);
         let result =  self.client.query(
-            "SELECT * FROM blog_user WHERE nick_name = $1 AND pass_hash = $2",
-            &[&name, &hash]
+            "SELECT * FROM blog_user WHERE nick_name = $1",
+            &[&name]
         );
         match result {
             Ok(ref row) => {
@@ -109,16 +109,16 @@ impl crate::user::UserRepository for PostgresUserRepository {
         Ok(user)
     }
 
-    fn get_user_posts(&mut self, user: User) -> Result<Vec<crate::post::Post>, MyError> {
+    fn get_user_posts(&mut self, user: String) -> Result<Vec<crate::post::Post>, MyError> {
         let result = self.client.query(
-            "SELECT * FROM post JOIN blog_user USING(user_id) WHERE user_id = $1",
-            &[&user.id]
+            "SELECT * FROM post JOIN blog_user USING(user_id) WHERE nick_name = $1",
+            &[&user]
         );
         if let Err(err) = result {
             return Err(Error::MyError::UserNotExists)}
         let mut posts: Vec<crate::post::Post> = Vec::new();
         for row in result.unwrap() {
-            let mut record = crate::post::Post {
+            let record = crate::post::Post {
                 author_id: row.get(0),
                 //post_id: row.get(1),
                 header: row.get(2),
@@ -172,7 +172,7 @@ pub fn test_func() {
     }
     //db.add_user("ololo", "safqfcvqe").unwrap();
     //println!("{:?}", db.get_user("Golovolastik", "mob5651008"));
-    let admin = db.get_user("Golovolastik", "mob5651008");
+    let admin = db.get_user("Golovolastik");
     //println!("{:?}", db.get_user_posts(admin.unwrap()));
     // for post in db.get_user_posts(admin.unwrap()) {
     //     println!("{:?}", post);

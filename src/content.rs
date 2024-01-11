@@ -10,10 +10,12 @@ pub fn generate(db: &mut PostgresUserRepository, user: Option<String>) -> String
     //db.get_user_posts()
     // заголовок и текст
     let mut data = BTreeMap::new();
-    data.insert("posts", vec![
-        ("Post 1", "Lorem ipsum dolor sit amet, consectetur adipiscing elit."),
-        ("Post 2", "Quisque ullamcorper placerat ipsum. Cras nibh."),
-    ]);
+    let posts = db.get_user_posts(user.unwrap()).unwrap();
+    // data.insert("posts", vec![
+    //     ("Post 1", "Lorem ipsum dolor sit amet, consectetur adipiscing elit."),
+    //     ("Post 2", "Quisque ullamcorper placerat ipsum. Cras nibh."),
+    // ]);
+    data.insert("posts", posts);
 
     // Чтение шаблона из файла
     let template = fs::read_to_string("content_page.hbs").expect("Не удалось прочитать шаблон");

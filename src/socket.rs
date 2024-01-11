@@ -6,10 +6,13 @@ use std::io::prelude::*;
 use std::thread;
 use std::time::Duration;
 use crate::db::PostgresUserRepository;
-use crate::user::UserRepository;
+use crate::user::{User, UserRepository};
 use std::collections::HashMap;
 use rand::{thread_rng, Rng};
 use chrono;
+use std::string::String;
+use std::sync::{Arc, Mutex, MutexGuard};
+
 
 
 // Структура для хранения сессий
@@ -68,7 +71,7 @@ fn handle_get_request(stream: &mut TcpStream, buffer: &[u8]) -> std::io::Result<
     stream.flush()?;
     Ok(())
 }
-fn handle_post_login_request(stream: &mut TcpStream, buffer: &[u8], db: &mut PostgresUserRepository, session_manager: &mut SessionManager) -> std::io::Result<crate::user::UserLogin> {
+fn handle_post_login_request(stream: &mut TcpStream, buffer: &[u8], db: &mut PostgresUserRepository, session_manager: &mut SessionManager, user: User) -> std::io::Result<crate::user::UserLogin> {
     let request = String::from_utf8_lossy(&buffer[..]);
     let body_start = request.find("\r\n\r\n").unwrap_or(0) + 4;
     let body = &request[body_start..].trim_end_matches('\0');
@@ -95,6 +98,7 @@ fn handle_post_login_request(stream: &mut TcpStream, buffer: &[u8], db: &mut Pos
                     println!("Password is correct");
                     let mut content = "session_id=".to_string();
                     let session_id = session_manager.create_session(&user.as_ref().unwrap().username);
+                    println!("{:?}", session_manager);
                     content.push_str(&session_id);
                     content.push_str(";");
                     let response = format!(
@@ -102,7 +106,7 @@ fn handle_post_login_request(stream: &mut TcpStream, buffer: &[u8], db: &mut Pos
                         content.len(),
                         content
                     );
-                    println!("{}", response);
+                    //println!("{}", response);
                     stream.write_all(response.as_bytes()).unwrap();
                 },
                 false => {
@@ -180,8 +184,12 @@ fn extract_username(request: &[u8]) -> Option<String> {
     }
     None
 }
-fn handle_session(stream: &mut TcpStream, session_id: String, db: &mut PostgresUserRepository) -> std::io::Result<()> {
+fn handle_session(stream: &mut TcpStream, session_id: String, db: &mut PostgresUserRepository, session_manager: MutexGuard<SessionManager>) -> std::io::Result<()> {
+    //let binding = session_manager.unwrap();
+    let user = find_user(session_id, &session_manager);
+    println!("{:?}", user);
     let contents = fs::read_to_string("registration.html").unwrap();
+    //let contents = generate(db, user);
     let response = format!(
         "HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n{}",
         contents.len(),
@@ -190,6 +198,11 @@ fn handle_session(stream: &mut TcpStream, session_id: String, db: &mut PostgresU
     stream.write_all(response.as_bytes())?;
     stream.flush()?;
     Ok(())
+}
+fn find_user(session_id: String, session_manager: &SessionManager) -> Option<&String> {
+    println!("{:?}", session_manager);
+    session_manager.sessions.get(&session_id)
+
 }
 
 // Функция для обработки страницы конкретного пользователя
@@ -239,8 +252,11 @@ fn handle_home_request(stream: &mut TcpStream, username: &str, session_manager: 
     stream.flush()?;
     Ok(())
 }
-fn handle_connection(mut stream: TcpStream, mut session_manager: SessionManager) {
+fn handle_connection(mut stream: TcpStream, session_manager: Arc<Mutex<SessionManager>>) {
+    let mut session_manager = session_manager.lock().unwrap();
+    println!("{:?}", session_manager);
     let mut db = crate::db::connect().unwrap();
+    let mut user = crate::user::User::new();
     let mut buffer = [0; 2048];
     stream.read(&mut buffer).unwrap();
 
@@ -258,7 +274,7 @@ fn handle_connection(mut stream: TcpStream, mut session_manager: SessionManager)
             handle_sleep(&mut stream).unwrap();
         }
         b if b.starts_with(b"POST / HTTP/1.1\r\n") => {
-            handle_post_login_request(&mut stream, &buffer, &mut db, &mut session_manager).unwrap();
+            handle_post_login_request(&mut stream, &buffer, &mut db, &mut session_manager, user).unwrap();
         }
         b if b.starts_with(b"GET /images/") => {
             handle_image_request(&mut stream).unwrap();
@@ -269,12 +285,15 @@ fn handle_connection(mut stream: TcpStream, mut session_manager: SessionManager)
             }
         }
         b if b.starts_with(b"GET /session=") => {
-            // Извлечение идентификатора сессии из запроса
-            let session_start = b.iter().position(|&x| x == b'=').unwrap_or(0) + 1;
-            let session_end = b.iter().position(|&x| x == b' ').unwrap_or(buffer.len());
-            let session_id = std::str::from_utf8(&buffer[session_start..session_end]).unwrap();
-
-            handle_session(&mut stream, session_id.to_string(), &mut db).unwrap();
+            let request = std::str::from_utf8(&buffer).unwrap();
+            let mut id = String::new();
+            if let Some(start_index) = request.find("/session=") {
+                let remaining = &request[start_index + "/session=".len()..];
+                if let Some(end_index) = remaining.find(" ") {
+                    id = remaining[..end_index].to_string();
+                }
+            }
+            handle_session(&mut stream, id, &mut db, session_manager).unwrap();
         }
         _ => {
             let contents = fs::read_to_string("404.html").unwrap();
@@ -291,14 +310,13 @@ fn handle_connection(mut stream: TcpStream, mut session_manager: SessionManager)
 pub fn listen() {
     let listener = TcpListener::bind("127.0.0.1:7878").unwrap();
     let pool = ThreadPool::new(4);
-    let mut session_manager = SessionManager::new();
+    let session_manager = Arc::new(Mutex::new(SessionManager::new()));
 
     for stream in listener.incoming().take(20) {
         let stream = stream.unwrap();
+        let session_manager_clone = Arc::clone(&session_manager);
 
-        let session_manager_clone = session_manager.clone(); // Клонируем для передачи в замыкание
-
-        pool.execute(|| {
+        pool.execute( || {
             handle_connection(stream, session_manager_clone);
         });
     }

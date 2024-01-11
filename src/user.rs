@@ -8,6 +8,15 @@ pub struct User {
     pub login: String,
     pub password_hash: String,
 }
+impl User {
+    pub fn new() -> Self {
+        User {
+            id: 0,
+            login: "".to_string(),
+            password_hash: "".to_string(),
+        }
+    }
+}
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UserLogin {
     pub username: String,
@@ -20,8 +29,8 @@ pub trait UserRepository {
     fn check_pass(&mut self, name: &str, pass: &str) -> bool;
     fn add_user(&mut self, name: &str, password_hash: &str) -> Result<(), Error::MyError>;
     // Другие методы для работы с пользователями могут быть добавлены здесь
-    fn get_user(&mut self, name: &str, password: &str) -> Result<User, Error::MyError>;
-    fn get_user_posts(&mut self, user: crate::user::User) -> Result<Vec<crate::post::Post>, Error::MyError>;
+    fn get_user(&mut self, name: &str) -> Result<User, Error::MyError>;
+    fn get_user_posts(&mut self, user: String) -> Result<Vec<crate::post::Post>, Error::MyError>;
     fn add_post(&mut self, user: crate::user::User, post: crate::post::Post) -> Result<(), Error::MyError>;
 }
 
