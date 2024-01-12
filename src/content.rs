@@ -10,6 +10,7 @@ pub fn generate(db: &mut PostgresUserRepository, user: Option<&String>) -> Strin
     //db.get_user_posts()
     // заголовок и текст
     let mut data = BTreeMap::new();
+    println!("{:?}", user);
     let posts = db.get_user_posts(user.unwrap()).unwrap();
     //println!("User: {:?}", user);
     // for post in &posts {

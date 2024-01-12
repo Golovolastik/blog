@@ -10,6 +10,9 @@
             align-items: center;
             height: 100vh;
             margin: 0;
+            transform: scale(0.8);
+            transform-origin: top left;
+            width: 125%;
         }
         a {
             color: #0060B6;
@@ -92,9 +95,28 @@
     </div>
 
     <!-- Кнопка "Новый пост" -->
-    <a href="https://www.ya.ru">
-        <button class="new-post-btn">Add post +</button>
-    </a>
+    <button class="new-post-btn">Add post +</button>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelector('.new-post-btn').addEventListener('click', function(event) {
+                event.preventDefault(); // Отменяем стандартное действие по переходу по ссылке
+
+                // Загрузка содержимого страницы из файла /post.html
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState == 4 && xhr.status == 200) {
+                        var myHtmlContent = xhr.responseText;
+
+                        // Отобразить контент в каком-то контейнере (например, в теле документа)
+                        document.querySelector('.container').innerHTML = myHtmlContent;
+                    }
+                };
+                xhr.open('GET', '/post.html', true);
+                xhr.send();
+            });
+        });
+    </script>
+
 
     {{#each posts}}
         <div class="post">

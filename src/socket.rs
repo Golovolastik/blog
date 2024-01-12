@@ -8,10 +8,13 @@ use std::time::Duration;
 use crate::db::PostgresUserRepository;
 use crate::user::{User, UserRepository};
 use std::collections::HashMap;
+use std::str::from_utf8;
 use rand::{thread_rng, Rng};
 use chrono;
 use std::string::String;
 use std::sync::{Arc, Mutex, MutexGuard};
+use url::Url;
+use percent_encoding::percent_decode_str;
 
 
 
@@ -92,13 +95,13 @@ fn handle_post_login_request(stream: &mut TcpStream, buffer: &[u8], db: &mut Pos
             stream.write_all(response.as_bytes()).unwrap();
         },
         Ok(false) => {
-            println!("User is already registered");
+            //println!("User is already registered");
             match db.check_pass(&user.as_ref().unwrap().username, &user.as_ref().unwrap().password) {
                 true => {
-                    println!("Password is correct");
+                    //println!("Password is correct");
                     let mut content = "session_id=".to_string();
                     let session_id = session_manager.create_session(&user.as_ref().unwrap().username);
-                    println!("{:?}", session_manager);
+                    //println!("{:?}", session_manager);
                     content.push_str(&session_id);
                     content.push_str(";");
                     let response = format!(
@@ -174,7 +177,7 @@ fn extract_username(request: &[u8]) -> Option<String> {
     let request_str = String::from_utf8_lossy(request);
     let home_str = "GET /home";
     if let Some(start_idx) = request_str.find(home_str) {
-        println!("inside the loop");
+        //println!("inside the loop");
         let start = start_idx + home_str.len(); // Находим начало имени пользователя после "/home="
         let end = request_str[start_idx + home_str.len()..].find(' ')
             .map(|i| i + start_idx + home_str.len())
@@ -187,7 +190,7 @@ fn extract_username(request: &[u8]) -> Option<String> {
 fn handle_session(stream: &mut TcpStream, session_id: String, db: &mut PostgresUserRepository, session_manager: MutexGuard<SessionManager>) -> std::io::Result<()> {
     //let binding = session_manager.unwrap();
     let user = find_user(session_id, &session_manager);
-    println!("{:?}", user);
+    //println!("{:?}", user);
     //let contents = fs::read_to_string("registration.html").unwrap();
     let contents = crate::content::generate(db, user);
     let response = format!(
@@ -200,11 +203,10 @@ fn handle_session(stream: &mut TcpStream, session_id: String, db: &mut PostgresU
     Ok(())
 }
 fn find_user(session_id: String, session_manager: &SessionManager) -> Option<&String> {
-    println!("{:?}", session_manager);
+    //println!("{:?}", session_manager);
     session_manager.sessions.get(&session_id)
 
 }
-
 // Функция для обработки страницы конкретного пользователя
 fn handle_user_page(stream: &mut TcpStream, username: Option<String>, db: &mut PostgresUserRepository) -> std::io::Result<()> {
     if let Some(username) = username {
@@ -252,6 +254,53 @@ fn handle_home_request(stream: &mut TcpStream, username: &str, session_manager: 
     stream.flush()?;
     Ok(())
 }
+fn handle_post(stream: &mut TcpStream) -> std::io::Result<()> {
+    let contents = std::fs::read_to_string("post.html")?;
+    let response = format!(
+        "HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n{}",
+        contents.len(),
+        contents
+    );
+    stream.write_all(response.as_bytes())?;
+    stream.flush()?;
+    Ok(())
+}
+fn handle_add_post_request(stream: &mut TcpStream, buffer: &[u8], db: &mut PostgresUserRepository, session_manager: &mut SessionManager, user: User) -> std::io::Result<()> {
+    let request = String::from_utf8_lossy(&buffer[..]);
+    let body_start = request.find("session=").unwrap_or(0) + 8;
+    let body = &request[body_start..].trim_end_matches('\0');
+    println!("{:?}", body);
+
+// Разбор URL
+    if let Some(query) = body.split('?').last() {
+        let url_params: Vec<&str> = query.split('&').collect();
+
+        // Обработка параметров
+        for param in url_params {
+            let key_value: Vec<&str> = param.split('=').collect();
+
+            if key_value.len() == 2 {
+                let key = key_value[0];
+                let value = key_value[1];
+
+                match key {
+                    "session" => {
+                        println!("Session: {}", value);
+                    }
+                    "postTitle" => {
+                        println!("Post Title: {}", value);
+                    }
+                    "postContent" => {
+                        println!("Post Content: {}", value);
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
+
+    Ok(())
+}
 fn handle_connection(mut stream: TcpStream, session_manager: Arc<Mutex<SessionManager>>) {
     let mut session_manager = session_manager.lock().unwrap();
     println!("{:?}", session_manager);
@@ -259,8 +308,14 @@ fn handle_connection(mut stream: TcpStream, session_manager: Arc<Mutex<SessionMa
     let mut user = crate::user::User::new();
     let mut buffer = [0; 2048];
     stream.read(&mut buffer).unwrap();
+    //println!("{:?}", from_utf8(&buffer));
+
 
     match buffer {
+        b if b.windows(11).any(|window| window == b"?postTitle=") => {
+            println!("Contains");
+            handle_add_post_request(&mut stream, &buffer, &mut db, &mut session_manager, user).unwrap();
+        }
         b if b.starts_with(b"OPTIONS / HTTP/1.1\r\n") => {
             handle_options_request(&mut stream).unwrap();
         }
@@ -272,6 +327,10 @@ fn handle_connection(mut stream: TcpStream, session_manager: Arc<Mutex<SessionMa
         }
         b if b.starts_with(b"GET /sleep HTTP/1.1\r\n") => {
             handle_sleep(&mut stream).unwrap();
+        }
+        b if b.starts_with(b"POST /lab HTTP/1.1\r\n") => {
+            println!("POST LAB");
+            handle_add_post_request(&mut stream, &buffer, &mut db, &mut session_manager, user).unwrap();
         }
         b if b.starts_with(b"POST / HTTP/1.1\r\n") => {
             handle_post_login_request(&mut stream, &buffer, &mut db, &mut session_manager, user).unwrap();
@@ -294,6 +353,10 @@ fn handle_connection(mut stream: TcpStream, session_manager: Arc<Mutex<SessionMa
                 }
             }
             handle_session(&mut stream, id, &mut db, session_manager).unwrap();
+        }
+        b if b.starts_with(b"GET /post") => {
+            let request = std::str::from_utf8(&buffer).unwrap();
+            handle_post(&mut stream).unwrap();
         }
         _ => {
             let contents = fs::read_to_string("404.html").unwrap();

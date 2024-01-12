@@ -7,3 +7,9 @@ pub struct Post {
     pub header: String,
     pub content: String,
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct PostForm {
+    pub header: String,
+    pub content: String,
+}

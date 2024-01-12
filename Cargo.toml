@@ -13,3 +13,5 @@ crypto-hash = "0.3.4"
 serde = { version = "1.0.193", features = ["derive"] }
 rand = "0.8.5"
 chrono = "0.4.31"
+url = "2.5.0"
+percent-encoding = "2.1"
