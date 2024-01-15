@@ -129,14 +129,21 @@ impl crate::user::UserRepository for PostgresUserRepository {
         Ok(posts)
     }
 
-    fn add_post(&mut self, user: User, post: crate::post::Post) -> Result<(), MyError> {
+    fn add_post(&mut self, user: &str, post: crate::post::PostForm) -> Result<(), MyError> {
+        println!("Hello from database");
+        println!("User {user}");
+        println!("{:?}", post);
         match self.client.execute(
-            "INSERT INTO post (user_id, title, content) VALUES ($1, $2, $3)",
-            &[&user.id, &post.header, &post.content],
+            "INSERT INTO post (user_id, title, content) \
+                    VALUES ((SELECT user_id FROM blog_user WHERE nick_name = $1), $2, $3);",
+            &[&user, &post.title, &post.content],
         ) {
             Ok(1) => println!("Post added"),
             Ok(num) => println!("Undefined behavior"),
-            _ => return Err(MyError::UserNotExists)
+            Err(err) => {
+                eprintln!("{:?}", err);
+                return Err(MyError::UserNotExists)
+            }
         }
         Ok(())
     }

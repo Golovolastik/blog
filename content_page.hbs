@@ -109,6 +109,12 @@
 
                         // Отобразить контент в каком-то контейнере (например, в теле документа)
                         document.querySelector('.container').innerHTML = myHtmlContent;
+
+                        // Изменение адресной строки браузера
+                        // history.pushState(null, null, '/post.html');
+
+                        // Изменение адресной строки браузера и перезагрузка страницы
+                        window.location.href = '/post.html';
                     }
                 };
                 xhr.open('GET', '/post.html', true);

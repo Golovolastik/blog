@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta name="viewport" content="width=60%, initial-scale=1">
+    <title>Title</title>
+    <meta name="viewport" charset="UTF-8" content="width=device-width, initial-scale=1">
     <style>
         body {
             font-family: Arial, Helvetica, sans-serif;
@@ -9,20 +10,10 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            margin: 0;
+            margin: 0 auto;
             background-color: #f7f7f7;
-        }
-
-        .container {
-            border: 1px solid #ccc;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             width: 50%;
-            padding: 20px;
-            border-radius: 10px;
-            background-color: #fff;
-            margin: auto;
         }
-
         .post-form {
             margin-bottom: 20px;
             padding-bottom: 20px;
@@ -45,7 +36,6 @@
             resize: vertical;
         }
 
-
         .post-form button {
             display: block;
             width: 100%;
@@ -57,10 +47,6 @@
             cursor: pointer;
             font-size: 18px;
             transition: background-color 0.3s ease;
-        }
-
-        .post-form button:hover {
-            background-color: #0056b3;
         }
 
         .imgcontainer {
@@ -75,51 +61,65 @@
     </style>
 </head>
 <body>
+<form>
+    <div>
+        <div class="imgcontainer">
+            <img src="/images/logo.jpg" alt="Avatar" class="avatar">
+        </div>
+        <div class="post-form">
+            <label><b>Text</b></label>
+            <input type="text" id="postTitle" placeholder="title" required>
 
-<div class="container">
-    <div class="imgcontainer">
-        <img src="/images/logo.jpg" alt="Avatar" class="avatar">
+            <label><b>Content</b></label>
+            <textarea id="postContent" placeholder="Create..." rows="6"></textarea>
+
+            <button type="submit" onclick="addPost(event)">Publish</button>
+            <script>
+                function addPost(event) {
+                    event.preventDefault();
+                    console.log("hello");
+
+                    const title = document.getElementById('postTitle').value;
+                    const content = document.getElementById('postContent').value;
+
+                    const data = {
+                        title: title,
+                        content: content
+                    };
+                    fetch('http://localhost:7878/add_post', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    })
+                        .then(response => {
+                            if (response.ok) {
+                                return response.text();
+                            } else {
+                                throw new Error('Error sending data');
+                            }
+                        })
+                        .then(text => {
+                            if (text.includes('Success')) {
+                                // Парсим полученный Cookie, чтобы получить идентификатор сессии
+                                const sessionID = text.split('#')[1];
+                                // Запрашиваем страницу /session= с идентификатором сессии
+                                window.location.href = `http://localhost:7878/session=${sessionID}`;
+                            } else {
+                                window.location.href = `http://localhost:7878/`;
+
+                            }
+                        })
+                        .catch(error => {
+                            // Обработка ошибок при отправке данных на сервер
+                            console.error(error);
+                        });
+                }
+
+            </script>
+        </div>
     </div>
-
-    <div class="post-form">
-        <h2>Добавить запись</h2>
-        <form id="myForm">
-            <input type="text" id="postTitle" name="postTitle" placeholder="Заголовок поста">
-            <textarea id="postContent" name="postContent" placeholder="Текст поста" rows="6"></textarea>
-            <button type="submit" onclick="submitForm(event)">Опубликовать</button>
-        </form>
-    </div>
-    <script>
-        function submitForm(event) {
-            event.preventDefault();
-            var form = document.getElementById("myForm");
-            var formData = new FormData(form);
-
-            fetch('http://localhost:7878/lab', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: formData
-            })
-                .then(response => {
-                    if (response.ok) {
-                        return response.text();
-                    } else {
-                        throw new Error('Error sending data');
-                    }
-                })
-                .then(data => {
-                    // Обработка ответа от сервера
-                    console.log(data);
-                })
-                .catch(error => {
-                    // Обработка ошибок
-                    console.error('Ошибка:', error);
-                });
-        }
-    </script>
-</div>
-
+</form>
 </body>
 </html>

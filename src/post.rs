@@ -10,6 +10,6 @@ pub struct Post {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PostForm {
-    pub header: String,
+    pub title: String,
     pub content: String,
 }

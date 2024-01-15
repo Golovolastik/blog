@@ -22,6 +22,7 @@ pub fn generate(db: &mut PostgresUserRepository, user: Option<&String>) -> Strin
     // ]);
     let posts_tuples: Vec<(&str, &str)> = posts
         .iter()
+        .rev()
         .map(|post| (post.header.as_str(), post.content.as_str()))
         .collect();
     data.insert("posts", posts_tuples);

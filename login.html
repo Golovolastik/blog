@@ -61,7 +61,7 @@
 
 <div id="error-message" style="color: red; font-size: 0.8em; display: none; padding: 5px; background-color: #ffe0e0; position: absolute; top: 0; left: 50%; transform: translateX(-50%); z-index: 1;"></div>
 
-<form id="loginForm">
+<form id="loginForm" onsubmit="submitForm(event)">
     <div class="imgcontainer">
         <img src="/images/logo.jpg" alt="Avatar" class="avatar">
     </div>
@@ -79,6 +79,7 @@
         <script>
 
             function submitForm(event) {
+                console.log("Form submitted");
                 event.preventDefault();
                 const username = document.getElementById('username').value;
                 const password = document.getElementById('password').value;
@@ -88,7 +89,7 @@
                     password: password
                 };
 
-                fetch('http://localhost:7878', {
+                fetch('http://localhost:7878/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
