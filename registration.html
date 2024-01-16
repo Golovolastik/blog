@@ -58,7 +58,7 @@
     </style>
 </head>
 <body>
-
+<div id="error-message" style="color: red; font-size: 0.8em; display: none; padding: 5px; background-color: #ffe0e0; position: absolute; top: 0; left: 50%; transform: translateX(-50%); z-index: 1;"></div>
 <form id="loginForm">
     <div class="imgcontainer">
         <img src="/images/logo.jpg" alt="Avatar" class="avatar">
@@ -72,23 +72,31 @@
         <input type="password" id="password" placeholder="Enter Password" name="psw" required>
 
         <label for="email"><b>Email</b></label>
-        <input type="email" id="email" placeholder="Enter Email" name="email" required>
+        <input type="password" id="pass_repeat" placeholder="Repeat Password" name="email" required>
 
-        <button type="submit" onclick="submitForm()">Register</button>
+        <button type="submit" onclick="submitForm(event)">Register</button>
         <script>
-            function submitForm() {
+            function submitForm(event) {
+                event.preventDefault();
                 const username = document.getElementById('username').value;
                 const password = document.getElementById('password').value;
-                const email = document.getElementById('email').value;
+                const repeat = document.getElementById('pass_repeat').value;
+                if (password == repeat) {
+
+                } else {
+                    const errorMessage = document.getElementById('error-message');
+                    errorMessage.innerText = 'Wrong password';
+                    errorMessage.style.display = 'block';
+                    return
+                }
 
 
                 const data = {
                     username: username,
-                    password: password,
-                    email: email
+                    password: password
                 };
 
-                fetch('http://localhost:7878', {
+                fetch('http://localhost:7878/reg', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -98,7 +106,7 @@
                     .then(response => {
                         // Обработка ответа от сервера
                         if (response.ok) {
-                            window.location.href = 'http://localhost:7878'; // Перенаправление на страницу hello.html
+                            window.location.href = 'http://localhost:7878';
                         } else {
                             throw new Error('Ошибка отправки данных на сервер');
                         }

@@ -267,7 +267,7 @@ fn handle_post(stream: &mut TcpStream) -> std::io::Result<()> {
     Ok(())
 }
 
-fn handle_add_post_request(stream: &mut TcpStream, buffer: &[u8], db: &mut PostgresUserRepository, session_manager: &mut SessionManager) -> std::io::Result</*crate::post::PostForm*/()> {
+fn handle_add_post_request(stream: &mut TcpStream, buffer: &[u8], db: &mut PostgresUserRepository, session_manager: &mut SessionManager) -> std::io::Result<()> {
     let request = String::from_utf8_lossy(&buffer[..]);
     let body_start = request.find("\r\n\r\n").unwrap_or(0) + 4;
     let body = &request[body_start..].trim_end_matches('\0');
@@ -288,6 +288,28 @@ fn handle_add_post_request(stream: &mut TcpStream, buffer: &[u8], db: &mut Postg
     stream.write_all(response.as_bytes())?;
     stream.flush()?;
     // Ok(post.unwrap())
+    Ok(())
+}
+fn handle_post_registration_request(stream: &mut TcpStream, buffer: &[u8], db: &mut PostgresUserRepository) -> std::io::Result<()> {
+    let request = String::from_utf8_lossy(&buffer[..]);
+    let body_start = request.find("\r\n\r\n").unwrap_or(0) + 4;
+    let body = &request[body_start..].trim_end_matches('\0');
+    let new_user = serde_json::from_str::<crate::user::UserLogin>(&body).unwrap();
+
+    let result = db.add_user(&new_user.username, &new_user.password);
+    match result {
+        Ok(_) => {},
+        Err(e) => eprintln!("{:?}", e),
+    }
+
+    let contents = fs::read_to_string("login.html").unwrap();
+    let response = format!(
+        "HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n{}",
+        contents.len(),
+        contents
+    );
+    stream.write_all(response.as_bytes())?;
+    stream.flush()?;
     Ok(())
 }
 fn handle_connection(mut stream: TcpStream, session_manager: Arc<Mutex<SessionManager>>) {
@@ -317,12 +339,15 @@ fn handle_connection(mut stream: TcpStream, session_manager: Arc<Mutex<SessionMa
         b if b.starts_with(b"GET /sleep HTTP/1.1\r\n") => {
             handle_sleep(&mut stream).unwrap();
         }
+        b if b.starts_with(b"POST / HTTP/1.1\r\n") => {
+            handle_post_login_request(&mut stream, &buffer, &mut db, &mut session_manager, user).unwrap();
+        }
+        b if b.starts_with(b"POST /reg HTTP/1.1\r\n") => {
+            handle_post_registration_request(&mut stream, &buffer, &mut db).unwrap();
+        }
         b if b.starts_with(b"POST /add_post") => {
             println!("POST LAB");
             handle_add_post_request(&mut stream, &buffer, &mut db, &mut session_manager).unwrap();
-        }
-        b if b.starts_with(b"POST / HTTP/1.1\r\n") => {
-            handle_post_login_request(&mut stream, &buffer, &mut db, &mut session_manager, user).unwrap();
         }
         b if b.starts_with(b"GET /images/") => {
             handle_image_request(&mut stream).unwrap();
