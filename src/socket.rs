@@ -8,36 +8,27 @@ use std::time::Duration;
 use crate::db::PostgresUserRepository;
 use crate::user::{User, UserRepository};
 use std::collections::HashMap;
-use std::fmt::format;
-use std::str::from_utf8;
 use rand::{thread_rng, Rng};
 use chrono;
 use std::string::String;
 use std::sync::{Arc, Mutex, MutexGuard};
-use url::Url;
-use percent_encoding::percent_decode_str;
-
-
 
 // Структура для хранения сессий
 #[derive(Clone, Debug)]
 struct SessionManager {
     sessions: HashMap<String, String>, // Map<session_id, username>
 }
-
 impl SessionManager {
     fn new() -> Self {
         SessionManager {
             sessions: HashMap::new(),
         }
     }
-
     fn create_session(&mut self, username: &str) -> String {
         let session_id = generate_unique_session_id(); // Генерация уникального идентификатора сессии
         self.sessions.insert(session_id.clone(), username.to_string());
         session_id
     }
-
     fn get_username(&self, session_id: &str) -> Option<&String> {
         self.sessions.get(session_id)
     }
@@ -45,12 +36,10 @@ impl SessionManager {
 fn generate_unique_session_id() -> String {
     let mut rng = thread_rng();
     let timestamp = chrono::Utc::now().timestamp_nanos(); // Используем временную метку
-
     // Создаем уникальный идентификатор сессии путем комбинирования временной метки и случайного числа
     let session_id: String = format!("{}{}", timestamp, rng.gen::<u64>());
     session_id
 }
-
 fn read_file(filename: &str) -> std::io::Result<String> {
     fs::read_to_string(filename)
 }
@@ -96,13 +85,10 @@ fn handle_post_login_request(stream: &mut TcpStream, buffer: &[u8], db: &mut Pos
             stream.write_all(response.as_bytes()).unwrap();
         },
         Ok(false) => {
-            //println!("User is already registered");
             match db.check_pass(&user.as_ref().unwrap().username, &user.as_ref().unwrap().password) {
                 true => {
-                    //println!("Password is correct");
                     let mut content = "session_id=".to_string();
                     let session_id = session_manager.create_session(&user.as_ref().unwrap().username);
-                    //println!("{:?}", session_manager);
                     content.push_str(&session_id);
                     content.push_str(";");
                     let response = format!(
@@ -110,7 +96,6 @@ fn handle_post_login_request(stream: &mut TcpStream, buffer: &[u8], db: &mut Pos
                         content.len(),
                         content
                     );
-                    //println!("{}", response);
                     stream.write_all(response.as_bytes()).unwrap();
                 },
                 false => {
@@ -178,7 +163,6 @@ fn extract_username(request: &[u8]) -> Option<String> {
     let request_str = String::from_utf8_lossy(request);
     let home_str = "GET /home";
     if let Some(start_idx) = request_str.find(home_str) {
-        //println!("inside the loop");
         let start = start_idx + home_str.len(); // Находим начало имени пользователя после "/home="
         let end = request_str[start_idx + home_str.len()..].find(' ')
             .map(|i| i + start_idx + home_str.len())
@@ -189,10 +173,7 @@ fn extract_username(request: &[u8]) -> Option<String> {
     None
 }
 fn handle_session(stream: &mut TcpStream, session_id: String, db: &mut PostgresUserRepository, session_manager: MutexGuard<SessionManager>) -> std::io::Result<()> {
-    //let binding = session_manager.unwrap();
     let user = find_user(session_id, &session_manager);
-    //println!("{:?}", user);
-    //let contents = fs::read_to_string("registration.html").unwrap();
     let contents = crate::content::generate(db, user);
     let response = format!(
         "HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n{}",
@@ -204,9 +185,7 @@ fn handle_session(stream: &mut TcpStream, session_id: String, db: &mut PostgresU
     Ok(())
 }
 fn find_user(session_id: String, session_manager: &SessionManager) -> Option<&String> {
-    //println!("{:?}", session_manager);
     session_manager.sessions.get(&session_id)
-
 }
 // Функция для обработки страницы конкретного пользователя
 fn handle_user_page(stream: &mut TcpStream, username: Option<String>, db: &mut PostgresUserRepository) -> std::io::Result<()> {
@@ -251,7 +230,6 @@ fn handle_home_request(stream: &mut TcpStream, username: &str, session_manager: 
         );
         stream.write_all(response.as_bytes())?;
     }
-
     stream.flush()?;
     Ok(())
 }
@@ -295,13 +273,11 @@ fn handle_post_registration_request(stream: &mut TcpStream, buffer: &[u8], db: &
     let body_start = request.find("\r\n\r\n").unwrap_or(0) + 4;
     let body = &request[body_start..].trim_end_matches('\0');
     let new_user = serde_json::from_str::<crate::user::UserLogin>(&body).unwrap();
-
     let result = db.add_user(&new_user.username, &new_user.password);
     match result {
         Ok(_) => {},
         Err(e) => eprintln!("{:?}", e),
     }
-
     let contents = fs::read_to_string("login.html").unwrap();
     let response = format!(
         "HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n{}",
@@ -314,19 +290,11 @@ fn handle_post_registration_request(stream: &mut TcpStream, buffer: &[u8], db: &
 }
 fn handle_connection(mut stream: TcpStream, session_manager: Arc<Mutex<SessionManager>>) {
     let mut session_manager = session_manager.lock().unwrap();
-    //println!("{:?}", session_manager);
     let mut db = crate::db::connect().unwrap();
     let mut user = crate::user::User::new();
     let mut buffer = [0; 4096];
     stream.read(&mut buffer).unwrap();
-    //println!("{:?}", from_utf8(&buffer));
-
-
     match buffer {
-        // b if b.windows(11).any(|window| window == b"?postTitle=") => {
-        //      println!("Contains");
-        //     handle_add_post_request(&mut stream, &buffer, &mut db, &mut session_manager).unwrap();
-        // }
         b if b.starts_with(b"OPTIONS / HTTP/1.1\r\n") => {
             handle_options_request(&mut stream).unwrap();
         }

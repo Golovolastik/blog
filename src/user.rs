@@ -35,10 +35,6 @@ pub trait UserRepository {
 }
 
 pub fn calculate_password_hash(pass: &str) -> String {
-    // let data = pass.as_bytes();
-    // let result = digest(Algorithm::SHA256, data);
-    //
-    // 42
     let data = pass.as_bytes();
     let hash = crypto_hash::hex_digest(crypto_hash::Algorithm::SHA256, data);
     hash

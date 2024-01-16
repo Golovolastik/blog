@@ -1,15 +1,12 @@
-use std::io::Read;
 use postgres;
 use postgres::{Client, NoTls};
 use crate::Error;
 use crate::Error::MyError;
 use crate::user::{User, UserRepository};
 
-
 pub struct PostgresUserRepository {
     client: Client,
 }
-
 impl PostgresUserRepository {
     pub fn new(client: Client) -> Self {
         PostgresUserRepository { client }
@@ -80,7 +77,6 @@ impl crate::user::UserRepository for PostgresUserRepository {
         if let Ok(true) = crate::user::UserRepository::check_user_availability(self, name) {
             return Err(Error::MyError::UserNotExists);
         }
-        //let hash = crate::user::calculate_password_hash(password);
         let result =  self.client.query(
             "SELECT * FROM blog_user WHERE nick_name = $1",
             &[&name]
@@ -102,7 +98,6 @@ impl crate::user::UserRepository for PostgresUserRepository {
                     password_hash: row.get(2),
                 });
             }
-
             // Возвращаем последнее значение user_data
             user_data.unwrap()
         };
@@ -154,45 +149,4 @@ pub fn connect() -> Result<PostgresUserRepository, postgres::Error> {
     let mut client = Client::connect("postgresql://postgres:example@localhost:5432/blog", NoTls)?;
     let mut admin = PostgresUserRepository::new(client);
     Ok(admin)
-
-//     !!!!!!!!!!!!!!!
-//         !!!!!!!!!!!
-// !!!!!!!!!!!!!!!!!!!!
-//     for row in client.query("SELECT content FROM post", &[])? {
-//         // let id: i32 = row.get(0);
-//         // let name: &str = row.get(1);
-//         let data: &str = row.get(0);
-//
-//         println!("found post: {:?}", data);
-//     }
-//     Ok(())
-}
-
-pub fn test_func() {
-    //println!("{:?}",insert_hash(1, "mob5651008"));
-    let mut connection = connect();
-    let mut db: PostgresUserRepository;
-    if let Err(_) = connection {
-        panic!("Can't connect to database");
-    } else {
-        db = connection.unwrap();
-    }
-    //db.add_user("ololo", "safqfcvqe").unwrap();
-    //println!("{:?}", db.get_user("Golovolastik", "mob5651008"));
-    let admin = db.get_user("Golovolastik");
-    //println!("{:?}", db.get_user_posts(admin.unwrap()));
-    // for post in db.get_user_posts(admin.unwrap()) {
-    //     println!("{:?}", post);
-    // }
-    // let post = crate::post::Post {
-    //     //post_id: 0,
-    //     author_id: admin.as_ref().unwrap().id,
-    //     header: "Tilimilitryamdia".to_string(),
-    //     content: "Story about fairy country...".to_string(),
-    // };
-    // match db.add_post(admin.unwrap(), post) {
-    //     Ok(()) => println!("Success"),
-    //     Err(err) => println!("Something wrong: {:?}", err),
-    // };
-    println!("{:?}", db.check_pass("Golovolastik", "mob5008"));
 }
